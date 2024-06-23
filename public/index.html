@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <title>Node.js App</title>
+</head>
+<body>
+    <div class="container">
+        <h1 id="date"></h1>
+        <h2 id="greeting"></h2>
+        <form id="nameForm">
+            <label for="name">Введите ваше имя:</label>
+            <input type="text" id="name" name="name" required>
+            <button type="submit">Отправить</button>
+        </form>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            function updateDateTime() {
+                const now = new Date();
+                const dateStr = now.toLocaleString();
+                document.getElementById("date").textContent = `Дата: ${dateStr}`;
+            }
+
+            fetch("/api/greeting")
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("greeting").textContent = `${data.greeting}`;
+                });
+
+            document.getElementById("nameForm").addEventListener("submit", function(event) {
+                event.preventDefault();
+                const userName = document.getElementById("name").value;
+
+                fetch("/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: `name=${userName}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("date").textContent = `Дата: ${data.date}`;
+                    document.getElementById("greeting").textContent = `${data.greeting}`;
+                });
+            });
+
+            updateDateTime();
+            setInterval(updateDateTime, 1000); 
+        });
+    </script>
+</body>
+</html>
