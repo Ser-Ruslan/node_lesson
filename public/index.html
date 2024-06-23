@@ -3,53 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <title>Node.js App</title>
+    <link rel="stylesheet" href="style.css">
+    <title>MySQL+Nodejs</title>
 </head>
 <body>
     <div class="container">
-        <h1 id="date"></h1>
-        <h2 id="greeting"></h2>
-        <form id="nameForm">
-            <label for="name">Введите ваше имя:</label>
-            <input type="text" id="name" name="name" required>
-            <button type="submit">Отправить</button>
+        <h1>Таблица ChatBotTests</h1>
+        <table id="itemsTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Имя</th>
+                    <th>Описание</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            </tbody>
+        </table>
+        <form id="itemForm">
+            <h2>Добавить/Обновить элемент</h2>
+            <input type="hidden" id="itemId">
+            <label for="itemName">Имя:</label>
+            <input type="text" id="itemName" required>
+            <label for="itemDesc">Описание:</label>
+            <textarea id="itemDesc" required></textarea>
+            <button type="submit">Сохранить</button>
+            <button type="button" id="cancelBtn">Очистка</button>
         </form>
     </div>
+
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            function updateDateTime() {
-                const now = new Date();
-                const dateStr = now.toLocaleString();
-                document.getElementById("date").textContent = `Дата: ${dateStr}`;
+            const itemsTableBody = document.querySelector("#itemsTable tbody");
+            const itemForm = document.getElementById("itemForm");
+            const itemIdInput = document.getElementById("itemId");
+            const itemNameInput = document.getElementById("itemName");
+            const itemDescInput = document.getElementById("itemDesc");
+            const cancelBtn = document.getElementById("cancelBtn");
+
+           
+            function loadItems() {
+                fetch("/getAllItems")
+                    .then(response => response.json())
+                    .then(items => {
+                        itemsTableBody.innerHTML = "";
+                        items.forEach(item => {
+                            const row = document.createElement("tr");
+                            row.innerHTML = `
+                                <td>${item.id}</td>
+                                <td>${item.name}</td>
+                                <td>${item.desc}</td>
+                                <td>
+                                    <button onclick="editItem(${item.id}, '${item.name}', '${item.desc}')">Изменить</button>
+                                    <button onclick="deleteItem(${item.id})">Удалить</button>
+                                </td>
+                            `;
+                            itemsTableBody.appendChild(row);
+                        });
+                    });
             }
 
-            fetch("/api/greeting")
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("greeting").textContent = `${data.greeting}`;
-                });
+            
+            window.editItem = function(id, name, desc) {
+                itemIdInput.value = id;
+                itemNameInput.value = name;
+                itemDescInput.value = desc;
+            };
 
-            document.getElementById("nameForm").addEventListener("submit", function(event) {
-                event.preventDefault();
-                const userName = document.getElementById("name").value;
-
-                fetch("/", {
+            
+            window.deleteItem = function(id) {
+                fetch("/deleteItem", {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/x-www-form-urlencoded"
+                        "Content-Type": "application/json"
                     },
-                    body: `name=${userName}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("date").textContent = `Дата: ${data.date}`;
-                    document.getElementById("greeting").textContent = `${data.greeting}`;
-                });
+                    body: JSON.stringify({ id })
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data) loadItems();
+                  });
+            };
+
+          
+            itemForm.addEventListener("submit", function(event) {
+                event.preventDefault();
+
+                const id = itemIdInput.value;
+                const name = itemNameInput.value;
+                const desc = itemDescInput.value;
+
+                const url = id ? "/updateItem" : "/addItem";
+                const method = id ? "POST" : "POST";
+
+                fetch(url, {
+                    method: method,
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ id, name, desc })
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data) {
+                          loadItems();
+                          itemForm.reset();
+                      }
+                  });
             });
 
-            updateDateTime();
-            setInterval(updateDateTime, 1000); 
+            
+            cancelBtn.addEventListener("click", function() {
+                itemForm.reset();
+            });
+
+            
+            loadItems();
         });
     </script>
 </body>
