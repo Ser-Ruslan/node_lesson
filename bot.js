@@ -11,3 +11,5 @@ bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
     bot.sendMessage(chatId, 'Привет, октагон!');
 });
+
+module.exports = bot;
