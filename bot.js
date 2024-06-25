@@ -99,7 +99,7 @@ bot.onText(/\/randomitem/, (msg) => {
             const response = `(${item.id}) - ${item.name}: ${item.desc}`;
             bot.sendMessage(chatId, response);
         } else {
-            bot.sendMessage(chatId, 'Нет доступных предметов.');
+            bot.sendMessage(chatId, 'Нет доступных строк.');
         }
     });
 });
@@ -135,7 +135,7 @@ bot.on('message', (msg) => {
                 if (results.affectedRows > 0) {
                     bot.sendMessage(chatId, 'Удачно');
                 } else {
-                    bot.sendMessage(chatId, 'Ошибка: предмет не найден.');
+                    bot.sendMessage(chatId, 'Ошибка: строка не найдена.');
                 }
             });
         }
@@ -157,7 +157,7 @@ bot.on('message', (msg) => {
                     const response = `(${item.id}) - ${item.name}: ${item.desc}`;
                     bot.sendMessage(chatId, response);
                 } else {
-                    bot.sendMessage(chatId, 'Предмет не найден.');
+                    bot.sendMessage(chatId, 'Ошибка: строка не найдена.');
                 }
             });
         }
